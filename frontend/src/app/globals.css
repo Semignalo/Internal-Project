@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-primary: #3b82f6;      /* Blue 500 */
+  --color-brand-secondary: #8b5cf6;    /* Violet 500 */
+  --font-sans: var(--font-geist-sans), "Inter", sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+:root {
+  --background: #f4f5f7;
+  --foreground: #111827; 
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-border: rgba(255, 255, 255, 0.4);
+  --sidebar-bg: rgba(255, 255, 255, 0.9);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f1115;
+    --foreground: #f9fafb;
+    --card-bg: rgba(30, 32, 38, 0.6);
+    --card-border: rgba(255, 255, 255, 0.05);
+    --sidebar-bg: rgba(18, 20, 24, 0.9);
+  }
+}
+
+body {
+  background-color: var(--background);
+  background-image: radial-gradient(at 0% 0%, hsla(220,100%,94%,1) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, hsla(280,100%,94%,1) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image: radial-gradient(at 0% 0%, hsla(220,50%,15%,1) 0px, transparent 50%),
+                      radial-gradient(at 100% 100%, hsla(280,50%,15%,1) 0px, transparent 50%);
+  }
+}
+
+/* Glass Component Utilities */
+@layer utilities {
+  .glass-card {
+    @apply bg-[var(--card-bg)] backdrop-blur-xl border border-[var(--card-border)] rounded-2xl shadow-sm transition-all duration-300;
+  }
+  .glass-card:hover {
+    @apply shadow-md border-white/60 dark:border-white/10;
+  }
+  .glass-panel {
+    @apply bg-[var(--sidebar-bg)] backdrop-blur-md border-[var(--card-border)] shadow-[0_8px_32px_0_rgba(31,38,135,0.05)];
+  }
+}
