@@ -1,14 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) { }
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
+    // Check if a soft-deleted user with the same email exists
+    const existingDeleted = await this.prisma.user.findFirst({
+      where: {
+        email: createUserDto.email,
+        deletedAt: { not: null },
+      },
+    });
+
+    if (existingDeleted) {
+      // Restore the deleted user with the new data
+      return this.prisma.user.update({
+        where: { id: existingDeleted.id },
+        data: {
+          ...(createUserDto as any),
+          deletedAt: null,
+          createdAt: new Date(),
+        },
+      });
+    }
+
     return this.prisma.user.create({ data: createUserDto as any });
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginUserDto.email }
+    });
+
+    if (!user || user.password !== loginUserDto.password) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   findAll() {
