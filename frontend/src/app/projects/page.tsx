@@ -13,7 +13,7 @@ export default function ProjectsPage() {
     const [selectedProject, setSelectedProject] = useState<any>(null);
 
     useEffect(() => {
-        fetch("http://localhost:5000/projects")
+        fetch("/api/projects")
             .then(res => res.json())
             .then(json => {
                 // Filter out soft-deleted if applicable
@@ -62,7 +62,7 @@ export default function ProjectsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex space-x-1 p-1 bg-black/5 dark:bg-white/5 rounded-xl w-fit border border-[var(--card-border)]">
+            <div className="flex space-x-1 p-1 bg-black/5 dark:bg-white/5 rounded-xl w-full md:w-fit overflow-x-auto border border-[var(--card-border)] scrollbar-hide">
                 <TabButton label="All Projects" active={filter === "ALL"} onClick={() => setFilter("ALL")} count={projects.length} />
                 <TabButton label="Production" active={filter === "PRODUCTION"} onClick={() => setFilter("PRODUCTION")} count={projects.filter(p => p.status === "PRODUCTION").length} />
                 <TabButton label="Revision" active={filter === "REVISION"} onClick={() => setFilter("REVISION")} count={projects.filter(p => p.status === "REVISION").length} />
@@ -200,7 +200,7 @@ export default function ProjectsPage() {
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={(newProject: any) => {
                     // Refetch projects to get the nested relationships (like manager)
-                    fetch("http://localhost:5000/projects")
+                    fetch("/api/projects")
                         .then(res => res.json())
                         .then(json => setProjects(json.filter((p: any) => p.deletedAt === null)));
                 }}

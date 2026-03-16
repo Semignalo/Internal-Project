@@ -46,7 +46,7 @@ export default function ProjectDetailModal({
         setLocalProject((prev: any) => ({ ...prev, [field]: value }));
         setIsSaving(true);
         try {
-            const res = await fetch(`http://localhost:5000/projects/${localProject.id}`, {
+            const res = await fetch(`/api/projects/${localProject.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: value })
@@ -66,7 +66,7 @@ export default function ProjectDetailModal({
         if (!newDivisionName.trim()) return;
         setIsSaving(true);
         try {
-            const res = await fetch(`http://localhost:5000/divisions`, {
+            const res = await fetch(`/api/divisions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -98,7 +98,7 @@ export default function ProjectDetailModal({
         if (!editDivisionName.trim()) return;
         setIsSaving(true);
         try {
-            const res = await fetch(`http://localhost:5000/divisions/${divId}`, {
+            const res = await fetch(`/api/divisions/${divId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -126,7 +126,7 @@ export default function ProjectDetailModal({
     const handleDeleteProject = async () => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`http://localhost:5000/projects/${localProject.id}`, {
+            const res = await fetch(`/api/projects/${localProject.id}`, {
                 method: 'DELETE',
             });
             if (res.ok) {
@@ -162,7 +162,7 @@ export default function ProjectDetailModal({
                 {/* Header */}
                 <div className="flex items-start justify-between px-6 py-5 border-b border-[var(--card-border)] bg-gray-50/50 dark:bg-white/5">
                     <div className="flex flex-col gap-2 flex-1 mr-8">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center flex-wrap gap-2 mb-1">
                             <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ring-1 ring-inset ${getStatusColor(localProject.status)}`}>
                                 {localProject.status.replace("_", " ")}
                             </span>

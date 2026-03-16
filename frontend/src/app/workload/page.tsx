@@ -8,7 +8,7 @@ export default function WorkloadPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("http://localhost:5000/users")
+        fetch("/api/users")
             .then(res => res.json())
             .then(json => {
                 setTeam(json.filter((u: any) => u.deletedAt === null));

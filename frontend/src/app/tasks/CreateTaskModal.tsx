@@ -41,9 +41,9 @@ export default function CreateTaskModal({
     useEffect(() => {
         if (isOpen) {
             Promise.all([
-                fetch("http://localhost:5000/projects").then(r => r.json()),
-                fetch("http://localhost:5000/divisions").then(r => r.json()),
-                fetch("http://localhost:5000/users").then(r => r.json())
+                fetch("/api/projects").then(r => r.json()),
+                fetch("/api/divisions").then(r => r.json()),
+                fetch("/api/users").then(r => r.json())
             ])
                 .then(([projectsData, divisionsData, usersData]) => {
                     setProjects(projectsData.filter((p: any) => p.deletedAt === null));
@@ -74,7 +74,7 @@ export default function CreateTaskModal({
                 payload.deadline = new Date(data.deadline).toISOString();
             }
 
-            const response = await fetch("http://localhost:5000/tasks", {
+            const response = await fetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

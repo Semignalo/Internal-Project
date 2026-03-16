@@ -21,7 +21,7 @@ export default function TaskDetailModal({
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [attachments, setAttachments] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     // Subtask States
     const [isAddingSubtask, setIsAddingSubtask] = useState(false);
@@ -45,7 +45,6 @@ export default function TaskDetailModal({
     useEffect(() => {
         if (task) {
             setLocalTask({ ...task });
-            setAttachments([]); // Reset attachments for new task
             setSelectedProjectId(task.division?.projectId || "");
             setSelectedDivisionId(task.divisionId || "");
         }
@@ -54,9 +53,9 @@ export default function TaskDetailModal({
     useEffect(() => {
         if (isOpen && projects.length === 0) {
             Promise.all([
-                fetch("http://localhost:5000/projects").then(r => r.json()),
-                fetch("http://localhost:5000/divisions").then(r => r.json()),
-                fetch("http://localhost:5000/users").then(r => r.json())
+                fetch("/api/projects").then(r => r.json()),
+                fetch("/api/divisions").then(r => r.json()),
+                fetch("/api/users").then(r => r.json())
             ]).then(([p, d, u]) => {
                 setProjects(p.filter((x: any) => !x.deletedAt));
                 setDivisions(d);
@@ -75,7 +74,7 @@ export default function TaskDetailModal({
         setLocalTask((prev: any) => ({ ...prev, [field]: value }));
         setIsSaving(true);
         try {
-            const res = await fetch(`http://localhost:5000/tasks/${localTask.id}`, {
+            const res = await fetch(`/api/tasks/${localTask.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ [field]: value })
@@ -106,7 +105,7 @@ export default function TaskDetailModal({
     const handleDeleteTask = async () => {
         setIsDeleting(true);
         try {
-            const res = await fetch(`http://localhost:5000/tasks/${localTask.id}`, {
+            const res = await fetch(`/api/tasks/${localTask.id}`, {
                 method: 'DELETE'
             });
             if (res.ok) {
@@ -120,16 +119,51 @@ export default function TaskDetailModal({
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            const newFiles = Array.from(e.target.files);
-            setAttachments(prev => [...prev, ...newFiles]);
-            // In a real app, you would upload to AWS S3 / Firebase Storage here via a FormData POST
+            setIsUploading(true);
+            const formData = new FormData();
+            Array.from(e.target.files).forEach(file => {
+                formData.append('files', file);
+            });
+
+            try {
+                const res = await fetch(`/api/tasks/${localTask.id}/attachments`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    const newAttachments = await res.json();
+                    const updatedTask = {
+                        ...localTask,
+                        attachments: [...(localTask.attachments || []), ...newAttachments]
+                    };
+                    setLocalTask(updatedTask);
+                    if (onTaskUpdated) onTaskUpdated(updatedTask);
+                }
+            } catch (error) {
+                console.error("Failed to upload files", error);
+            } finally {
+                setIsUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            }
         }
     };
 
-    const handleRemoveAttachment = (indexToRemove: number) => {
-        setAttachments(prev => prev.filter((_, idx) => idx !== indexToRemove));
+    const handleRemoveAttachment = async (attachmentId: string) => {
+        try {
+            const res = await fetch(`/api/tasks/attachments/${attachmentId}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                const newAttachments = (localTask.attachments || []).filter((a: any) => a.id !== attachmentId);
+                const updatedTask = { ...localTask, attachments: newAttachments };
+                setLocalTask(updatedTask);
+                if (onTaskUpdated) onTaskUpdated(updatedTask);
+            }
+        } catch (error) {
+            console.error("Failed to remove attachment", error);
+        }
     };
 
     const handleAddSubtask = async () => {
@@ -139,7 +173,7 @@ export default function TaskDetailModal({
         }
 
         try {
-            const res = await fetch(`http://localhost:5000/tasks/${localTask.id}/subtasks`, {
+            const res = await fetch(`/api/tasks/${localTask.id}/subtasks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title: newSubtaskTitle })
@@ -170,7 +204,7 @@ export default function TaskDetailModal({
         if (onTaskUpdated) onTaskUpdated(updatedTask);
 
         try {
-            await fetch(`http://localhost:5000/tasks/subtasks/${subtaskId}`, {
+            await fetch(`/api/tasks/subtasks/${subtaskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isDone: !currentStatus })
@@ -188,7 +222,7 @@ export default function TaskDetailModal({
         if (onTaskUpdated) onTaskUpdated(updatedTask);
 
         try {
-            await fetch(`http://localhost:5000/tasks/subtasks/${subtaskId}`, {
+            await fetch(`/api/tasks/subtasks/${subtaskId}`, {
                 method: 'DELETE'
             });
         } catch (error) {
@@ -347,19 +381,25 @@ export default function TaskDetailModal({
                                     </div>
 
                                     {/* Uploaded Files List */}
-                                    {attachments.length > 0 && (
-                                        <div className="grid grid-cols-2 gap-3 mt-4">
-                                            {attachments.map((file, idx) => (
-                                                <div key={idx} className="flex items-center gap-3 p-2.5 rounded-lg border border-[var(--card-border)] bg-white dark:bg-black/20 group">
+                                    {isUploading && (
+                                        <div className="flex items-center justify-center p-4">
+                                            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                                            <span className="ml-2 text-sm text-gray-500">Uploading files...</span>
+                                        </div>
+                                    )}
+                                    {localTask.attachments && localTask.attachments.length > 0 && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                                            {localTask.attachments.map((file: any) => (
+                                                <div key={file.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-[var(--card-border)] bg-white dark:bg-black/20 group">
                                                     <div className="w-8 h-8 rounded bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400">
                                                         <FileText className="w-4 h-4" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{file.name}</p>
-                                                        <p className="text-[10px] text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                        <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate hover:text-blue-500 transition-colors cursor-pointer block">{file.fileName}</a>
+                                                        <p className="text-[10px] text-gray-500">{(file.fileSize / 1024 / 1024).toFixed(2)} MB</p>
                                                     </div>
                                                     <button
-                                                        onClick={() => handleRemoveAttachment(idx)}
+                                                        onClick={() => handleRemoveAttachment(file.id)}
                                                         className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all p-1"
                                                     >
                                                         <X className="w-4 h-4" />

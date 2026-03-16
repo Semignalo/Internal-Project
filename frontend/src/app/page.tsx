@@ -6,9 +6,17 @@ import { FolderKanban, TrendingUp, AlertCircle, Clock } from "lucide-react";
 export default function Home() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Guest");
 
   useEffect(() => {
-    fetch("http://localhost:5000/dashboard")
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        setUserName(JSON.parse(userStr).name.split(" ")[0]);
+      } catch (e) { }
+    }
+
+    fetch("/api/dashboard")
       .then(res => res.json())
       .then(json => {
         setData(json);
@@ -36,7 +44,7 @@ export default function Home() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight mb-1">Good morning, Sam!</h2>
+          <h2 className="text-3xl font-bold tracking-tight mb-1">Good morning, {userName}!</h2>
           <p className="text-gray-500 dark:text-gray-400">Here's what's happening in your agency today.</p>
         </div>
       </div>

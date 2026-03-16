@@ -23,6 +23,15 @@ export default function TasksPage() {
     const [selectedTask, setSelectedTask] = useState<any>(null);
     const [selectedDragTask, setSelectedDragTask] = useState<any>(null);
     const [defaultColumn, setDefaultColumn] = useState("TODO");
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [filterMode, setFilterMode] = useState<"MY_TASKS" | "ALL_TASKS">("MY_TASKS");
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setCurrentUser(JSON.parse(storedUser));
+        }
+    }, []);
 
     // Require 8px movement before triggering drag, allowing standard clicks to pass through
     const sensors = useSensors(
@@ -32,7 +41,7 @@ export default function TasksPage() {
     );
 
     useEffect(() => {
-        fetch("http://localhost:5000/tasks")
+        fetch(`/api/tasks?_t=${Date.now()}`)
             .then(res => res.json())
             .then(json => {
                 // Filter out soft-deleted
@@ -89,7 +98,7 @@ export default function TasksPage() {
 
         // API Call
         try {
-            const res = await fetch(`http://localhost:5000/tasks/${taskId}`, {
+            const res = await fetch(`/api/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newDbStatus })
@@ -98,7 +107,7 @@ export default function TasksPage() {
         } catch (error) {
             console.error(error);
             // Revert on error
-            fetch("http://localhost:5000/tasks")
+            fetch(`/api/tasks?_t=${Date.now()}`)
                 .then(res => res.json())
                 .then(json => setTasks(json.filter((t: any) => t.deletedAt === null)));
         }
@@ -121,18 +130,24 @@ export default function TasksPage() {
             <div className="space-y-8 fade-in h-auto flex flex-col">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
                     <div>
-                        <h2 className="text-3xl font-bold tracking-tight mb-1">My Tasks</h2>
+                        <h2 className="text-3xl font-bold tracking-tight mb-1">Task Management</h2>
                         <p className="text-gray-500 dark:text-gray-400">Manage your daily assignments and track progress.</p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex -space-x-2 mr-4">
-                            <Avatar initials="SJ" gradient="from-pink-400 to-purple-500" z="z-30" />
-                            <Avatar initials="SD" gradient="from-blue-400 to-cyan-500" z="z-20" />
-                            <Avatar initials="MV" gradient="from-amber-400 to-orange-500" z="z-10" />
-                            <div className="w-9 h-9 rounded-full bg-white dark:bg-[#1a1c23] border-2 border-white dark:border-[#0f1115] flex items-center justify-center text-xs font-bold text-gray-400 shadow-sm z-0">
-                                +2
-                            </div>
+                        <div className="bg-black/5 dark:bg-white/5 rounded-xl p-1 flex items-center">
+                            <button
+                                onClick={() => setFilterMode("MY_TASKS")}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${filterMode === "MY_TASKS" ? "bg-white dark:bg-[#1a1c23] shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                            >
+                                My Tasks
+                            </button>
+                            <button
+                                onClick={() => setFilterMode("ALL_TASKS")}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${filterMode === "ALL_TASKS" ? "bg-white dark:bg-[#1a1c23] shadow-sm text-gray-900 dark:text-white" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                            >
+                                All Tasks
+                            </button>
                         </div>
                         <button
                             onClick={() => {
@@ -146,10 +161,14 @@ export default function TasksPage() {
                     </div>
                 </div>
 
-                {/* Kanban Board */}
                 <div className="flex gap-6 overflow-x-auto overflow-y-hidden pb-8 min-h-[65vh] snap-x">
                     {columns.map(column => {
-                        const columnTasks = tasks.filter(t => getMappedStatus(t.status) === column.id);
+                        let displayedTasks = tasks;
+                        if (filterMode === "MY_TASKS" && currentUser) {
+                            displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
+                        }
+
+                        const columnTasks = displayedTasks.filter(t => getMappedStatus(t.status) === column.id);
 
                         return (
                             <DroppableColumn
@@ -172,7 +191,7 @@ export default function TasksPage() {
                     defaultColumn={defaultColumn}
                     onSuccess={(newTask: any) => {
                         // Refetch tasks to grab relations (like Division)
-                        fetch("http://localhost:5000/tasks")
+                        fetch(`/api/tasks?_t=${Date.now()}`)
                             .then(res => res.json())
                             .then(json => setTasks(json.filter((t: any) => t.deletedAt === null)));
                     }}
@@ -185,7 +204,7 @@ export default function TasksPage() {
                     onTaskUpdated={(updatedTask) => {
                         setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
                         // Re-fetch everything silently to ensure consistency (like assignees resolving correctly)
-                        fetch("http://localhost:5000/tasks")
+                        fetch(`/api/tasks?_t=${Date.now()}`)
                             .then(res => res.json())
                             .then(json => setTasks(json.filter((t: any) => t.deletedAt === null)));
                     }}

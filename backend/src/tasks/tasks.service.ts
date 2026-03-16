@@ -16,7 +16,7 @@ export class TasksService {
           create: assigneeIds.map(userId => ({ userId }))
         } : undefined
       },
-      include: { assignees: { include: { user: true } } }
+      include: { assignees: { include: { user: true } }, attachments: true }
     });
     await this.recalculateProgress(task.divisionId);
     return task;
@@ -27,7 +27,8 @@ export class TasksService {
       include: {
         division: { include: { project: true } },
         assignees: { include: { user: true } },
-        subtasks: true
+        subtasks: true,
+        attachments: true
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -39,7 +40,8 @@ export class TasksService {
       include: {
         division: { include: { project: true } },
         assignees: { include: { user: true } },
-        subtasks: true
+        subtasks: true,
+        attachments: true
       },
     });
   }
@@ -66,7 +68,8 @@ export class TasksService {
       include: {
         division: { include: { project: true } },
         assignees: { include: { user: true } },
-        subtasks: true
+        subtasks: true,
+        attachments: true
       }
     });
     await this.recalculateProgress(task.divisionId);
@@ -136,6 +139,29 @@ export class TasksService {
     await this.prisma.project.update({
       where: { id: projectId },
       data: { overallProgress: normalizedProjectProgress }
+    });
+  }
+
+  async uploadAttachments(taskId: string, files: any[]) {
+    const attachments = await Promise.all(
+      files.map((file) =>
+        this.prisma.attachment.create({
+          data: {
+            taskId,
+            fileName: file.originalname,
+            fileUrl: `/uploads/${file.filename}`,
+            fileSize: file.size,
+            mimeType: file.mimetype,
+          },
+        }),
+      ),
+    );
+    return attachments;
+  }
+
+  async removeAttachment(attachmentId: string) {
+    return this.prisma.attachment.delete({
+      where: { id: attachmentId },
     });
   }
 }

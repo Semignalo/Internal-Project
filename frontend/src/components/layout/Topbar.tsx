@@ -1,14 +1,23 @@
 "use client";
 
-import { Search, Bell, Plus } from "lucide-react";
+import { Search, Bell, Plus, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export function Topbar() {
+export function Topbar({ onOpenMenu }: { onOpenMenu?: () => void }) {
     const pathname = usePathname();
 
     return (
-        <header className="h-20 glass-panel border-b px-8 flex items-center justify-between sticky top-0 z-20 w-full transition-all duration-300">
+        <header className="h-16 md:h-20 glass-panel border-b px-4 md:px-8 flex items-center justify-between sticky top-0 z-20 w-full transition-all duration-300">
+            <div className="flex items-center gap-3 md:hidden">
+                <button
+                    onClick={onOpenMenu}
+                    className="p-2 -ml-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+            </div>
+
             <div className="relative w-96 hidden lg:block group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 <input

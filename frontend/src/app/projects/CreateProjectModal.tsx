@@ -29,7 +29,7 @@ export default function CreateProjectModal({
 
     useEffect(() => {
         if (isOpen) {
-            fetch("http://localhost:5000/users")
+            fetch("/api/users")
                 .then(res => res.json())
                 .then(data => setUsers(data.filter((u: any) => u.deletedAt === null)))
                 .catch(err => console.error("Error fetching users:", err));
@@ -41,7 +41,7 @@ export default function CreateProjectModal({
     const onSubmit = async (data: ProjectFormData) => {
         setIsSubmitting(true);
         try {
-            const response = await fetch("http://localhost:5000/projects", {
+            const response = await fetch("/api/projects", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

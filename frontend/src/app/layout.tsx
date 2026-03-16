@@ -17,8 +17,7 @@ export const metadata: Metadata = {
   description: "Internal Agency Operating System",
 };
 
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Topbar } from "@/components/layout/Topbar";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function RootLayout({
   children,
@@ -27,16 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-brand-primary/20 text-gray-900 dark:text-gray-100`}>
-        <div className="min-h-screen bg-transparent flex">
-          <Sidebar />
-          <div className="flex-1 md:ml-64 flex flex-col min-h-screen relative">
-            <Topbar />
-            <div className="p-8 max-w-7xl mx-auto w-full fade-in">
-              {children}
-            </div>
-          </div>
-        </div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-brand-primary/20 text-gray-900 dark:text-gray-100 bg-[#0a0a0a]`}>
+        <AppLayout>
+          {children}
+        </AppLayout>
       </body>
     </html>
   );

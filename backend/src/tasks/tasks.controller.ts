@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFiles } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -45,5 +48,24 @@ export class TasksController {
   @Delete('subtasks/:subtaskId')
   removeSubtask(@Param('subtaskId') subtaskId: string) {
     return this.tasksService.removeSubtask(subtaskId);
+  }
+
+  @Post(':id/attachments')
+  @UseInterceptors(FilesInterceptor('files', 10, {
+    storage: diskStorage({
+      destination: './public/uploads',
+      filename: (req: any, file: any, cb: any) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, uniqueSuffix + extname(file.originalname));
+      }
+    })
+  }))
+  uploadAttachments(@Param('id') id: string, @UploadedFiles() files: any[]) {
+    return this.tasksService.uploadAttachments(id, files);
+  }
+
+  @Delete('attachments/:attachmentId')
+  removeAttachment(@Param('attachmentId') attachmentId: string) {
+    return this.tasksService.removeAttachment(attachmentId);
   }
 }
