@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# STARINC OS — Frontend
 
-## Getting Started
+Aplikasi frontend untuk STARINC OS, dibangun dengan Next.js 16, React 19, TypeScript, dan Tailwind CSS.
 
-First, run the development server:
+## Halaman & Fitur
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| Route | Halaman | Fitur Utama |
+|-------|---------|-------------|
+| `/` | Dashboard | Metrik ringkasan, health proyek aktif, beban kerja tim |
+| `/projects` | Proyek | Daftar proyek, filter status, buat/edit/hapus proyek |
+| `/tasks` | Tugas | Kanban board drag-and-drop, subtask, lampiran, revisi |
+| `/workload` | Beban Kerja | Matriks kapasitas tim, deteksi overload |
+| `/settings` | Pengaturan | Manajemen pengguna dan konfigurasi sistem |
+| `/login` | Login | Autentikasi email & password |
+
+## Struktur Direktori
+
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout dengan font dan metadata
+│   ├── page.tsx            # Halaman dashboard
+│   ├── login/              # Halaman login
+│   ├── projects/           # Halaman manajemen proyek
+│   ├── tasks/              # Halaman kanban board tugas
+│   ├── workload/           # Halaman beban kerja tim
+│   └── settings/           # Halaman pengaturan sistem
+└── components/
+    └── layout/
+        ├── AppLayout.tsx   # Layout utama dengan sidebar & topbar
+        ├── Sidebar.tsx     # Menu navigasi samping
+        └── Topbar.tsx      # Header mobile
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup & Pengembangan
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Pastikan backend berjalan di `http://localhost:5000` sebelum memulai frontend.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Buka [http://localhost:3000](http://localhost:3000) di browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Build untuk Produksi
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Linting
 
-## Deploy on Vercel
+```bash
+npm run lint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech Stack
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Next.js 16** — React framework dengan App Router
+- **React 19** — UI library
+- **TypeScript** — Type safety
+- **Tailwind CSS** — Utility-first styling
+- **dnd-kit** — Drag-and-drop untuk Kanban board
+- **react-hook-form** — Manajemen form
+- **lucide-react** — Icon library
