@@ -141,7 +141,7 @@ export default function ProjectsPage() {
                                                 <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                                                     <Calendar className="w-3.5 h-3.5 opacity-70" />
                                                     <span>
-                                                        {new Date(project.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        {new Date(project.deadline).toLocaleDateString('en-GB')}
                                                     </span>
                                                 </div>
                                                 {isExpiringSoon(project.deadline) && project.status !== "DONE" && (

@@ -151,9 +151,9 @@ export default function CreateTaskModal({
                                         className={`w-full px-4 py-2.5 rounded-xl border ${errors.projectId ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-gray-900 dark:text-white`}
                                         {...register("projectId", { required: true })}
                                     >
-                                        <option value="">Select a project...</option>
+                                        <option className="dark:bg-[#1a1c23]" value="">Select a project...</option>
                                         {projects.map((p: any) => (
-                                            <option key={p.id} value={p.id}>
+                                            <option className="dark:bg-[#1a1c23]" key={p.id} value={p.id}>
                                                 {p.name}
                                             </option>
                                         ))}
@@ -169,9 +169,9 @@ export default function CreateTaskModal({
                                         {...register("divisionId", { required: true })}
                                         disabled={!selectedProjectId}
                                     >
-                                        <option value="">Select a division...</option>
+                                        <option className="dark:bg-[#1a1c23]" value="">Select a division...</option>
                                         {filteredDivisions.map((d: any) => (
-                                            <option key={d.id} value={d.id}>
+                                            <option className="dark:bg-[#1a1c23]" key={d.id} value={d.id}>
                                                 {d.name}
                                             </option>
                                         ))}
@@ -189,10 +189,10 @@ export default function CreateTaskModal({
                                         className="w-full px-3 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-gray-900 dark:text-white"
                                         {...register("priority")}
                                     >
-                                        <option value="LOW">Low</option>
-                                        <option value="MEDIUM">Medium</option>
-                                        <option value="HIGH">High</option>
-                                        <option value="URGENT">Urgent</option>
+                                        <option className="dark:bg-[#1a1c23]" value="LOW">Low</option>
+                                        <option className="dark:bg-[#1a1c23]" value="MEDIUM">Medium</option>
+                                        <option className="dark:bg-[#1a1c23]" value="HIGH">High</option>
+                                        <option className="dark:bg-[#1a1c23]" value="URGENT">Urgent</option>
                                     </select>
                                 </div>
                                 <div>

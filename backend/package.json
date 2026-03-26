@@ -17,7 +17,10 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:local:push": "prisma db push --schema=./prisma/schema.sqlite.prisma",
+    "prisma:local:seed": "ts-node prisma/seed.ts",
+    "start:local": "prisma generate --schema=./prisma/schema.sqlite.prisma && nest start --watch"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

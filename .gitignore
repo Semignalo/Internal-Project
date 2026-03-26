@@ -8,3 +8,7 @@ dist/
 .next/
 backend/.env
 frontend/.env
+# SQLite local dev database (do not push to git)
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/prisma/migrations/

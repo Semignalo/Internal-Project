@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, MoreHorizontal, MessageSquare, Paperclip, Clock, CheckCircle2, AlertCircle, FolderKanban } from "lucide-react";
+import { Plus, MoreHorizontal, MessageSquare, Paperclip, Clock, CheckCircle2, AlertCircle, FolderKanban, ChevronDown, ChevronRight, LayoutGrid, List } from "lucide-react";
 import CreateTaskModal from "./CreateTaskModal";
 import TaskDetailModal from "./TaskDetailModal";
 import {
@@ -16,6 +16,14 @@ import {
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
+const getMappedStatus = (status: string) => {
+    if (["TODO", "PLANNING"].includes(status)) return "TODO";
+    if (["IN_PROGRESS", "REVISION"].includes(status)) return "IN_PROGRESS";
+    if (["INTERNAL_REVIEW", "CLIENT_REVIEW"].includes(status)) return "REVIEW";
+    if (["COMPLETED", "APPROVED", "DONE"].includes(status)) return "COMPLETED";
+    return "TODO";
+};
+
 export default function TasksPage() {
     const [tasks, setTasks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -25,6 +33,8 @@ export default function TasksPage() {
     const [defaultColumn, setDefaultColumn] = useState("TODO");
     const [currentUser, setCurrentUser] = useState<any>(null);
     const [filterMode, setFilterMode] = useState<"MY_TASKS" | "ALL_TASKS">("MY_TASKS");
+    const [viewMode, setViewMode] = useState<"BOARD" | "LIST">("BOARD");
+    const [expandedProjects, setExpandedProjects] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -69,13 +79,33 @@ export default function TasksPage() {
         { id: "COMPLETED", title: "Completed", color: "bg-emerald-500" },
     ];
 
-    // Helper to map DB statuses to our 4 columns
-    const getMappedStatus = (status: string) => {
-        if (["TODO", "PLANNING"].includes(status)) return "TODO";
-        if (["IN_PROGRESS", "REVISION"].includes(status)) return "IN_PROGRESS";
-        if (["INTERNAL_REVIEW", "CLIENT_REVIEW"].includes(status)) return "REVIEW";
-        if (["COMPLETED", "APPROVED", "DONE"].includes(status)) return "COMPLETED";
-        return "TODO";
+    const toggleProject = (projectName: string) => {
+        setExpandedProjects(prev => ({
+            ...prev,
+            [projectName]: !prev[projectName]
+        }));
+    };
+
+    const getGroupedTasks = () => {
+        let displayedTasks = tasks;
+        if (filterMode === "MY_TASKS" && currentUser) {
+            displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
+        }
+
+        const grouped: Record<string, any[]> = {};
+        const noProject: any[] = [];
+
+        displayedTasks.forEach(task => {
+            const projectName = task.division?.project?.name;
+            if (projectName) {
+                if (!grouped[projectName]) grouped[projectName] = [];
+                grouped[projectName].push(task);
+            } else {
+                noProject.push(task);
+            }
+        });
+
+        return { grouped, noProject };
     };
 
     const handleDragEnd = async (event: any) => {
@@ -129,9 +159,24 @@ export default function TasksPage() {
         >
             <div className="space-y-8 fade-in h-auto flex flex-col">
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
-                    <div>
+                    <div className="flex-1 w-full md:w-auto">
                         <h2 className="text-3xl font-bold tracking-tight mb-1">Task Management</h2>
-                        <p className="text-gray-500 dark:text-gray-400">Manage your daily assignments and track progress.</p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-6">Manage your daily assignments and track progress.</p>
+                        
+                        <div className="flex items-center gap-6 border-b border-gray-200 dark:border-white/10 w-full mb-2">
+                            <button
+                                onClick={() => setViewMode("LIST")}
+                                className={`pb-3 font-medium text-sm transition-colors border-b-2 flex items-center gap-2 ${viewMode === "LIST" ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                            >
+                                <List className="w-4 h-4" /> Daftar Tugas
+                            </button>
+                            <button
+                                onClick={() => setViewMode("BOARD")}
+                                className={`pb-3 font-medium text-sm transition-colors border-b-2 flex items-center gap-2 ${viewMode === "BOARD" ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
+                            >
+                                <LayoutGrid className="w-4 h-4" /> Papan Mode
+                            </button>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -161,29 +206,113 @@ export default function TasksPage() {
                     </div>
                 </div>
 
-                <div className="flex gap-6 overflow-x-auto overflow-y-hidden pb-8 min-h-[65vh] snap-x">
-                    {columns.map(column => {
-                        let displayedTasks = tasks;
-                        if (filterMode === "MY_TASKS" && currentUser) {
-                            displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
-                        }
+                {viewMode === "BOARD" && (
+                    <div className="flex gap-6 overflow-x-auto overflow-y-hidden pb-8 min-h-[65vh] snap-x">
+                        {columns.map(column => {
+                            let displayedTasks = tasks;
+                            if (filterMode === "MY_TASKS" && currentUser) {
+                                displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
+                            }
 
-                        const columnTasks = displayedTasks.filter(t => getMappedStatus(t.status) === column.id);
+                            const columnTasks = displayedTasks.filter(t => getMappedStatus(t.status) === column.id);
 
-                        return (
-                            <DroppableColumn
-                                key={column.id}
-                                column={column}
-                                columnTasks={columnTasks}
-                                onAddClick={() => {
-                                    setDefaultColumn(column.id);
-                                    setIsModalOpen(true);
-                                }}
-                                onTaskClick={(task: any) => setSelectedTask(task)}
-                            />
-                        );
-                    })}
-                </div>
+                            return (
+                                <DroppableColumn
+                                    key={column.id}
+                                    column={column}
+                                    columnTasks={columnTasks}
+                                    onAddClick={() => {
+                                        setDefaultColumn(column.id);
+                                        setIsModalOpen(true);
+                                    }}
+                                    onTaskClick={(task: any) => setSelectedTask(task)}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
+
+                {viewMode === "LIST" && (() => {
+                    const { grouped, noProject } = getGroupedTasks();
+                    const allProjects = Object.keys(grouped);
+
+                    return (
+                        <div className="flex flex-col gap-4 pb-8 min-h-[65vh]">
+                            {/* Header for list */}
+                            <div className="hidden md:grid grid-cols-[minmax(250px,1fr)_120px_150px_100px_150px] gap-4 px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 mb-2">
+                                <div>Name</div>
+                                <div>Status</div>
+                                <div>Assignee</div>
+                                <div>Priority</div>
+                                <div>Due Date</div>
+                            </div>
+
+                            {allProjects.map(project => (
+                                <div key={project} className="flex flex-col">
+                                    <button 
+                                        onClick={() => toggleProject(project)}
+                                        className="flex items-center gap-2 py-3 px-2 text-left font-semibold text-gray-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors group"
+                                    >
+                                        {expandedProjects[project] ? (
+                                            <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
+                                        ) : (
+                                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
+                                        )}
+                                        <h3 className="text-lg">{project}</h3>
+                                        <span className="text-xs font-medium bg-black/5 dark:bg-white/10 px-2.5 py-0.5 rounded-full text-gray-500 dark:text-gray-400 ml-2">
+                                            {grouped[project].length}
+                                        </span>
+                                    </button>
+
+                                    {expandedProjects[project] && (
+                                        <div className="flex flex-col gap-1 mt-2 mb-4 ml-7 border-l-2 border-gray-200 dark:border-white/10 pl-6">
+                                            {grouped[project].length === 0 ? (
+                                                <div className="text-sm text-gray-500 py-3 px-4 italic">No tasks in this project</div>
+                                            ) : (
+                                                grouped[project].map((task: any) => (
+                                                    <ListTaskRow key={task.id} task={task} onClick={() => setSelectedTask(task)} columns={columns} />
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="h-px bg-gray-100 dark:bg-white/5 w-full my-1"></div>
+                                </div>
+                            ))}
+
+                            {/* No Project Section */}
+                            {(noProject.length > 0 || allProjects.length === 0) && (
+                                <div className="flex flex-col mt-4">
+                                    <button 
+                                        onClick={() => toggleProject('No Project')}
+                                        className="flex items-center gap-2 py-3 px-2 text-left font-semibold text-gray-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors group"
+                                    >
+                                        {expandedProjects['No Project'] ? (
+                                            <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
+                                        ) : (
+                                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300" />
+                                        )}
+                                        <h3 className="text-lg">Other Tasks</h3>
+                                        <span className="text-xs font-medium bg-black/5 dark:bg-white/10 px-2.5 py-0.5 rounded-full text-gray-500 dark:text-gray-400 ml-2">
+                                            {noProject.length}
+                                        </span>
+                                    </button>
+
+                                    {expandedProjects['No Project'] && (
+                                        <div className="flex flex-col gap-1 mt-2 mb-4 ml-7 border-l-2 border-gray-200 dark:border-white/10 pl-6">
+                                            {noProject.length === 0 ? (
+                                                <div className="text-sm text-gray-500 py-3 px-4 italic">No tasks</div>
+                                            ) : (
+                                                noProject.map((task: any) => (
+                                                    <ListTaskRow key={task.id} task={task} onClick={() => setSelectedTask(task)} columns={columns} />
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
 
                 <CreateTaskModal
                     isOpen={isModalOpen}
@@ -229,6 +358,81 @@ export default function TasksPage() {
 }
 
 // Subcomponents
+function ListTaskRow({ task, onClick, columns }: { task: any, onClick: () => void, columns: any[] }) {
+    const isUrgent = task.priority === "URGENT" || task.priority === "HIGH";
+    
+    // Find column metadata for status color and title
+    const mappedStatusId = getMappedStatus(task.status);
+    const columnMeta = columns.find(c => c.id === mappedStatusId) || columns[0];
+
+    return (
+        <div 
+            onClick={onClick}
+            className="group grid grid-cols-1 md:grid-cols-[minmax(250px,1fr)_120px_150px_100px_150px] gap-4 items-center px-4 py-3 hover:bg-white/60 dark:hover:bg-[#1a1c23] rounded-xl cursor-pointer transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5 hover:shadow-sm"
+        >
+            {/* Name */}
+            <div className="flex flex-col gap-1 overflow-hidden pr-4">
+                <div className="font-medium text-gray-900 dark:text-white truncate group-hover:text-blue-500 transition-colors">
+                    {task.title}
+                </div>
+                {task.division && (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate w-fit flex items-center gap-1.5">
+                        <FolderKanban className="w-3 h-3" /> {task.division.name}
+                    </span>
+                )}
+            </div>
+
+            {/* Status */}
+            <div>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-black/5 dark:bg-white/5`}>
+                    <span className={`w-2 h-2 rounded-full ${columnMeta.color}`}></span>
+                    {columnMeta.title}
+                </span>
+            </div>
+
+            {/* Assignee */}
+            <div className="flex -space-x-1.5 relative z-0">
+                {task.assignees?.length > 0 ? (
+                    task.assignees.slice(0, 3).map((a: any, i: number) => (
+                        <div key={i} title={a.user?.name} className="w-7 h-7 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 border-2 border-white dark:border-[#12141a] flex items-center justify-center text-[10px] font-bold text-gray-600 dark:text-gray-300 shadow-sm relative hover:z-10 transition-transform hover:scale-110">
+                            {a.user?.name ? a.user.name.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                    ))
+                ) : (
+                    <span className="text-xs text-gray-400 italic">Unassigned</span>
+                )}
+                {task.assignees?.length > 3 && (
+                    <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-[#12141a] flex items-center justify-center text-[10px] font-bold text-gray-500 shadow-sm relative z-0">
+                        +{task.assignees.length - 3}
+                    </div>
+                )}
+            </div>
+
+            {/* Priority */}
+            <div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md mb-1
+                    ${isUrgent 
+                    ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 ring-1 ring-inset ring-rose-500/20' 
+                    : 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 ring-1 ring-inset ring-blue-500/20'}`}>
+                    {task.priority || "MEDIUM"}
+                </span>
+            </div>
+
+            {/* Due Date */}
+            <div>
+                {task.deadline ? (
+                    <div className={`flex items-center gap-1.5 text-xs font-medium ${isExpiringSoon(task.deadline) ? 'text-rose-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{new Date(task.deadline).toLocaleDateString('en-GB')}</span>
+                    </div>
+                ) : (
+                    <span className="text-xs text-gray-400 italic">No Due Date</span>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function DroppableColumn({ column, columnTasks, onAddClick, onTaskClick }: any) {
     const { isOver, setNodeRef } = useDroppable({ id: column.id });
 
@@ -355,7 +559,7 @@ function TaskCard({ task, onClick, isOverlay = false }: { task: any, onClick: ()
                     {task.deadline && (
                         <div className={`flex items-center gap-1 ${isExpiringSoon(task.deadline) ? 'text-rose-500' : ''}`}>
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{new Date(task.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                            <span>{new Date(task.deadline).toLocaleDateString('en-GB')}</span>
                         </div>
                     )}
 

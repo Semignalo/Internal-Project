@@ -25,6 +25,8 @@ services:
       DATABASE_URL: "postgresql://starinc_user:starinc_password@db:5432/starinc_db?schema=public"
     ports:
       - "5000:5000"
+    volumes:
+      - backend_uploads:/app/public/uploads
     restart: always
 
   frontend:
@@ -42,3 +44,4 @@ services:
 
 volumes:
   pgdata:
+  backend_uploads:

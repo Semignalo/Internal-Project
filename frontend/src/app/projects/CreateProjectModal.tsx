@@ -120,12 +120,12 @@ export default function CreateProjectModal({
                                     className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-gray-900 dark:text-white"
                                     {...register("projectType", { required: true })}
                                 >
-                                    <option value="">Select a type...</option>
-                                    <option value="Campaign">Marketing Campaign</option>
-                                    <option value="Branding">Branding Identity</option>
-                                    <option value="Video Production">Video Production</option>
-                                    <option value="Web Development">Web Development</option>
-                                    <option value="Social Media">Social Media Management</option>
+                                    <option className="dark:bg-[#1a1c23]" value="">Select a type...</option>
+                                    <option className="dark:bg-[#1a1c23]" value="Campaign">Marketing Campaign</option>
+                                    <option className="dark:bg-[#1a1c23]" value="Branding">Branding Identity</option>
+                                    <option className="dark:bg-[#1a1c23]" value="Video Production">Video Production</option>
+                                    <option className="dark:bg-[#1a1c23]" value="Web Development">Web Development</option>
+                                    <option className="dark:bg-[#1a1c23]" value="Social Media">Social Media Management</option>
                                 </select>
                             </div>
 
@@ -135,9 +135,9 @@ export default function CreateProjectModal({
                                     className={`w-full px-4 py-2.5 rounded-xl border ${errors.managerId ? 'border-red-500' : 'border-gray-300 dark:border-gray-700'} bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-gray-900 dark:text-white`}
                                     {...register("managerId", { required: true })}
                                 >
-                                    <option value="">Select a manager...</option>
+                                    <option className="dark:bg-[#1a1c23]" value="">Select a manager...</option>
                                     {users.map((u: any) => (
-                                        <option key={u.id} value={u.id}>
+                                        <option className="dark:bg-[#1a1c23]" key={u.id} value={u.id}>
                                             {u.name} ({u.role})
                                         </option>
                                     ))}

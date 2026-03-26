@@ -387,12 +387,12 @@ export default function ProjectDetailModal({
                                 <div className="flex flex-col gap-3 text-sm bg-white dark:bg-[#1a1c23] p-3 rounded-xl border border-[var(--card-border)] shadow-sm">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-medium text-xs">Start Date</span>
-                                        <span className="font-semibold text-xs">{new Date(localProject.startDate).toLocaleDateString()}</span>
+                                        <span className="font-semibold text-xs">{new Date(localProject.startDate).toLocaleDateString('en-GB')}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-medium text-xs">Deadline</span>
                                         <span className={`font-bold text-[11px] px-2 py-0.5 rounded shadow-sm ${localProject.status === 'DONE' ? 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-300' : 'text-white bg-rose-500'}`}>
-                                            {new Date(localProject.deadline).toLocaleDateString()}
+                                            {new Date(localProject.deadline).toLocaleDateString('en-GB')}
                                         </span>
                                     </div>
                                 </div>

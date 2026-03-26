@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -25,11 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-brand-primary/20 text-gray-900 dark:text-gray-100 bg-[#0a0a0a]`}>
-        <AppLayout>
-          {children}
-        </AppLayout>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </ThemeProvider>
       </body>
     </html>
   );

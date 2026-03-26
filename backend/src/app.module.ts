@@ -10,6 +10,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ProjectTypesModule } from './project-types/project-types.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { join } from 'path';
     DivisionsModule,
     TasksModule,
     UsersModule,
-    PrismaModule
+    PrismaModule,
+    ProjectTypesModule
   ],
   controllers: [AppController],
   providers: [

@@ -507,8 +507,8 @@ export default function TaskDetailModal({
                                                 onChange={e => setSelectedProjectId(e.target.value)}
                                                 className="w-full mt-1 p-1.5 text-xs rounded-md border border-[var(--card-border)] bg-gray-50 dark:bg-black/50 text-gray-900 dark:text-gray-100"
                                             >
-                                                <option value="">Select project...</option>
-                                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                <option className="dark:bg-[#1a1c23]" value="">Select project...</option>
+                                                {projects.map(p => <option className="dark:bg-[#1a1c23]" key={p.id} value={p.id}>{p.name}</option>)}
                                             </select>
                                         </div>
                                         <div>
@@ -519,8 +519,8 @@ export default function TaskDetailModal({
                                                 disabled={!selectedProjectId}
                                                 className="w-full mt-1 p-1.5 text-xs rounded-md border border-[var(--card-border)] bg-gray-50 dark:bg-black/50 text-gray-900 dark:text-gray-100 disabled:opacity-50"
                                             >
-                                                <option value="">Select division...</option>
-                                                {filteredDivisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                                                <option className="dark:bg-[#1a1c23]" value="">Select division...</option>
+                                                {filteredDivisions.map(d => <option className="dark:bg-[#1a1c23]" key={d.id} value={d.id}>{d.name}</option>)}
                                             </select>
                                         </div>
                                         <div className="flex justify-end gap-2 pt-1 border-t border-[var(--card-border)] mt-2">
@@ -624,13 +624,13 @@ export default function TaskDetailModal({
                                 <div className="flex flex-col gap-3 text-sm">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-medium text-xs">Created</span>
-                                        <span className="font-semibold">{new Date(localTask.createdAt).toLocaleDateString()}</span>
+                                        <span className="font-semibold">{new Date(localTask.createdAt).toLocaleDateString('en-GB')}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-500 font-medium text-xs">Deadline</span>
                                         {localTask.deadline ? (
                                             <span className="font-bold text-[11px] text-white bg-rose-500 px-2 py-0.5 rounded shadow-sm">
-                                                {new Date(localTask.deadline).toLocaleDateString()}
+                                                {new Date(localTask.deadline).toLocaleDateString('en-GB')}
                                             </span>
                                         ) : (
                                             <span className="text-gray-400 italic text-xs font-medium">No deadline</span>

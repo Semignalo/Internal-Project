@@ -78,9 +78,9 @@ function GeneralSettings() {
                 </div>
                 <div className="flex flex-col gap-2">
                     <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Base Timezone</label>
-                    <select className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-                        <option>Jakarta (GMT+7)</option>
-                        <option>Singapore (GMT+8)</option>
+                    <select className="px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-gray-900 dark:text-white">
+                        <option className="dark:bg-[#1a1c23]">Jakarta (GMT+7)</option>
+                        <option className="dark:bg-[#1a1c23]">Singapore (GMT+8)</option>
                     </select>
                 </div>
             </div>
@@ -275,10 +275,10 @@ function UserFormModal({ onClose, onSuccess, userToEdit }: { onClose: () => void
                     </div>
                     <div>
                         <label className="block text-sm font-semibold mb-1">Role Configuration</label>
-                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-                            <option value="MEMBER">Staff / Member (Can execute tasks)</option>
-                            <option value="PROJECT_MANAGER">Project Manager (Can create projects)</option>
-                            <option value="ADMIN">Administrator</option>
+                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-black/20 focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-gray-900 dark:text-white">
+                            <option className="dark:bg-[#1a1c23]" value="MEMBER">Staff / Member (Can execute tasks)</option>
+                            <option className="dark:bg-[#1a1c23]" value="PROJECT_MANAGER">Project Manager (Can create projects)</option>
+                            <option className="dark:bg-[#1a1c23]" value="ADMIN">Administrator</option>
                         </select>
                     </div>
                     <div className="pt-4 flex gap-3">
