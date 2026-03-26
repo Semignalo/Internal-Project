@@ -7,7 +7,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV BACKEND_URL="http://backend_v5:5000"
+ENV BACKEND_URL="http://backend:5000"
 RUN npm run build
 
 FROM node:20-alpine AS runner
