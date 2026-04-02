@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "STARINC OS | Creative Operations",
-  description: "Internal Agency Operating System",
+  title: "Pao Planner | Creative Operations",
+  description: "Internal Agency Planning System",
 };
 
 import { AppLayout } from "@/components/layout/AppLayout";

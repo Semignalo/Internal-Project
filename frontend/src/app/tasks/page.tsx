@@ -157,7 +157,7 @@ export default function TasksPage() {
             }}
             onDragCancel={() => setSelectedDragTask(null)}
         >
-            <div className="space-y-8 fade-in h-auto flex flex-col">
+            <div className="fade-in flex flex-col" style={{ height: 'calc(100vh - 80px)' }}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
                     <div className="flex-1 w-full md:w-auto">
                         <h2 className="text-3xl font-bold tracking-tight mb-1">Task Management</h2>
@@ -207,28 +207,30 @@ export default function TasksPage() {
                 </div>
 
                 {viewMode === "BOARD" && (
-                    <div className="flex gap-6 overflow-x-auto overflow-y-hidden pb-8 min-h-[65vh] snap-x">
-                        {columns.map(column => {
-                            let displayedTasks = tasks;
-                            if (filterMode === "MY_TASKS" && currentUser) {
-                                displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
-                            }
+                    <div className="flex-1 overflow-hidden">
+                        <div className="flex gap-6 overflow-x-auto overflow-y-hidden h-full pb-4 snap-x">
+                            {columns.map(column => {
+                                let displayedTasks = tasks;
+                                if (filterMode === "MY_TASKS" && currentUser) {
+                                    displayedTasks = tasks.filter(t => t.assignees?.some((a: any) => a.userId === currentUser.id));
+                                }
 
-                            const columnTasks = displayedTasks.filter(t => getMappedStatus(t.status) === column.id);
+                                const columnTasks = displayedTasks.filter(t => getMappedStatus(t.status) === column.id);
 
-                            return (
-                                <DroppableColumn
-                                    key={column.id}
-                                    column={column}
-                                    columnTasks={columnTasks}
-                                    onAddClick={() => {
-                                        setDefaultColumn(column.id);
-                                        setIsModalOpen(true);
-                                    }}
-                                    onTaskClick={(task: any) => setSelectedTask(task)}
-                                />
-                            );
-                        })}
+                                return (
+                                    <DroppableColumn
+                                        key={column.id}
+                                        column={column}
+                                        columnTasks={columnTasks}
+                                        onAddClick={() => {
+                                            setDefaultColumn(column.id);
+                                            setIsModalOpen(true);
+                                        }}
+                                        onTaskClick={(task: any) => setSelectedTask(task)}
+                                    />
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
 
@@ -237,7 +239,7 @@ export default function TasksPage() {
                     const allProjects = Object.keys(grouped);
 
                     return (
-                        <div className="flex flex-col gap-4 pb-8 min-h-[65vh]">
+                        <div className="flex-1 overflow-y-auto flex flex-col gap-4 pb-8">
                             {/* Header for list */}
                             <div className="hidden md:grid grid-cols-[minmax(250px,1fr)_120px_150px_100px_150px] gap-4 px-6 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 mb-2">
                                 <div>Name</div>
@@ -437,7 +439,7 @@ function DroppableColumn({ column, columnTasks, onAddClick, onTaskClick }: any) 
     const { isOver, setNodeRef } = useDroppable({ id: column.id });
 
     return (
-        <div className="flex-1 min-w-[320px] max-w-[380px] snap-center flex flex-col gap-4">
+        <div className="flex-none w-[320px] snap-center flex flex-col gap-4 h-full">
             {/* Column Header */}
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-3">
@@ -455,7 +457,7 @@ function DroppableColumn({ column, columnTasks, onAddClick, onTaskClick }: any) 
             {/* Column Drop Zone / Container */}
             <div
                 ref={setNodeRef}
-                className={`flex-1 glass-card p-3 rounded-2xl flex flex-col gap-3 min-h-[150px] transition-colors border-2
+                className={`flex-1 glass-card p-3 rounded-2xl flex flex-col gap-3 overflow-y-auto transition-colors border-2
                     ${isOver ? 'border-blue-400 bg-blue-50/50 dark:bg-blue-900/20' : 'border-[var(--card-bg)]/50 border-dashed lg:border-solid lg:border lg:bg-[var(--card-bg)]'}
                 `}
             >

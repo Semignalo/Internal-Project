@@ -49,11 +49,17 @@ export default function LoginPage() {
 
                 {/* Logo Area */}
                 <div className="flex justify-center mb-8">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center">
-                            <div className="w-4 h-4 bg-white rounded-full"></div>
+                    <div className="flex items-center gap-2.5">
+                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/30">
+                            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white" xmlns="http://www.w3.org/2000/svg">
+                                <ellipse cx="6" cy="6" rx="2" ry="2.8" />
+                                <ellipse cx="11.5" cy="4.5" rx="2" ry="2.5" />
+                                <ellipse cx="17" cy="6" rx="2" ry="2.8" />
+                                <ellipse cx="20" cy="11" rx="1.6" ry="2.2" />
+                                <path d="M12 9.5c-3.5 0-6.5 2-7 5.5-.4 2.8 1.5 5 3.5 5 1 0 2-.5 3.5-.5s2.5.5 3.5.5c2 0 3.9-2.2 3.5-5-.5-3.5-3.5-5.5-7-5.5z" />
+                            </svg>
                         </div>
-                        <span className="font-bold text-2xl tracking-tight text-white">STARINC.</span>
+                        <span className="font-bold text-2xl tracking-tight text-white">Pao Planner</span>
                     </div>
                 </div>
 

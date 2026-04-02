@@ -34,7 +34,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
             <div className={`flex-1 flex flex-col min-h-screen relative transition-all duration-300 md:ml-64`}>
                 <Topbar onOpenMenu={() => setIsMobileMenuOpen(true)} />
-                <div className="p-4 md:p-8 max-w-7xl mx-auto w-full fade-in overflow-x-hidden">
+                <div className={`fade-in ${['/', '/tasks', '/projects', '/workload', '/settings'].includes(pathname) || pathname.startsWith('/projects/')
+                        ? 'p-4 md:px-8 md:py-6 w-full'
+                        : 'p-4 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden'
+                    }`}>
                     {children}
                 </div>
             </div>

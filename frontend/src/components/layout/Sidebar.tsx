@@ -30,10 +30,17 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
                 <div className="flex items-center justify-between mb-10">
                     <div className="flex items-center gap-2">
                         <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-xl shadow-lg border border-blue-400/50 shadow-blue-500/20">
-                            <FolderKanban className="text-white w-6 h-6" strokeWidth={2.5} />
+                            {/* Paw Print SVG */}
+                            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white" xmlns="http://www.w3.org/2000/svg">
+                                <ellipse cx="6" cy="6" rx="2" ry="2.8" />
+                                <ellipse cx="11.5" cy="4.5" rx="2" ry="2.5" />
+                                <ellipse cx="17" cy="6" rx="2" ry="2.8" />
+                                <ellipse cx="20" cy="11" rx="1.6" ry="2.2" />
+                                <path d="M12 9.5c-3.5 0-6.5 2-7 5.5-.4 2.8 1.5 5 3.5 5 1 0 2-.5 3.5-.5s2.5.5 3.5.5c2 0 3.9-2.2 3.5-5-.5-3.5-3.5-5.5-7-5.5z" />
+                            </svg>
                         </div>
                         <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                            STARINC OS
+                            Pao Planner
                         </h1>
                     </div>
                     {/* Close button for mobile */}

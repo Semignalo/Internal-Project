@@ -8,8 +8,9 @@ services:
       POSTGRES_USER: starinc_user
       POSTGRES_PASSWORD: starinc_password
       POSTGRES_DB: starinc_db
-    ports:
-      - "5432:5432"
+    # Port 5432 hanya expose internal, tidak ke host
+    expose:
+      - "5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: always
@@ -23,8 +24,9 @@ services:
       - db
     environment:
       DATABASE_URL: "postgresql://starinc_user:starinc_password@db:5432/starinc_db?schema=public"
-    ports:
-      - "5000:5000"
+    # Port backend hanya expose internal, tidak ke host
+    expose:
+      - "5000"
     volumes:
       - backend_uploads:/app/public/uploads
     restart: always
@@ -38,9 +40,19 @@ services:
       - backend
     environment:
       BACKEND_URL: "http://backend:5000"
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     restart: always
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared-tunnel
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - frontend
 
 volumes:
   pgdata:
