@@ -2,70 +2,201 @@
 description: Deploy / update project to TrueNAS server via SSH
 ---
 
-# Deploy ke TrueNAS
+# 🐾 Pao Planner — Panduan Deploy & Update
 
-## Langkah 1 — Push perubahan lokal ke GitHub
+> **Live URL**: https://paoplanner.starincofficial.id
+> **Server**: TrueNAS @ 192.168.1.201
+> **Stack**: Next.js (frontend) + NestJS (backend) + PostgreSQL + Cloudflare Tunnel
 
-```bash
+---
+
+## ⚡ Update Cepat (Rutin)
+
+Ini adalah alur kerja standar setiap kali ada perubahan kode.
+
+### Di PC Lokal
+
+```powershell
+cd "c:\laragon\www\Internal Project Starinc"
+
+# Stage semua perubahan
 git add .
-git commit -m "your commit message here"
-git push origin main
+
+# Commit dengan pesan yang jelas
+git commit -m "feat: deskripsi perubahan"
+
+# Push ke GitHub
+git push
 ```
 
-## Langkah 2 — SSH ke TrueNAS server
+### Di TrueNAS (via SSH)
 
-```bash
-ssh root@<IP_TRUENAS>
-# atau jika pakai user lain:
-ssh <username>@<IP_TRUENAS>
+```powershell
+# Buka SSH dari PowerShell
+ssh truenas_admin@192.168.1.201
 ```
 
-## Langkah 3 — Masuk ke folder project di server
-
 ```bash
-cd /mnt/<pool-name>/projects/Internal-Project
-# Sesuaikan path dengan lokasi project di TrueNAS
+# Masuk ke folder project
+cd "/mnt/STARINC_SERVER/Storage_STARINC/Local Project ( !! Jangan di apa-apa in !! )/starinc-internal"
+
+# Pull kode terbaru
+git pull
+
+# Rebuild dan restart semua container
+sudo docker compose down
+sudo docker compose up -d --build
+
+# Verifikasi semua container berjalan
+sudo docker compose ps
 ```
 
-## Langkah 4 — Pull kode terbaru dari GitHub
+✅ Selesai! Cek https://paoplanner.starincofficial.id
+
+---
+
+## 🚀 Setup Pertama Kali (One-Time)
+
+Hanya perlu dilakukan sekali saat setup server baru.
+
+### 1. Clone Repository
 
 ```bash
-git pull origin main
+cd /mnt/STARINC_SERVER/Storage_STARINC/
+git clone https://github.com/Semignalo/Internal-Project.git starinc-internal
+cd starinc-internal
 ```
 
-## Langkah 5 — Rebuild dan restart Docker containers
+### 2. Buat File `.env`
 
-Jika ada perubahan pada backend (schema, kode, dependencies):
 ```bash
-docker-compose down
-docker-compose build backend
-docker-compose up -d
+# Buat file .env dengan Cloudflare Tunnel Token
+# Token didapat dari: https://one.dash.cloudflare.com → Zero Trust → Networks → Tunnels
+cat > .env << 'EOF'
+CLOUDFLARE_TUNNEL_TOKEN=token_anda_disini
+EOF
 ```
 
-Jika hanya perubahan frontend (tidak ada container frontend):
-> Frontend adalah static build via Next.js. Rebuild jika ada perubahan frontend.
-
-## Langkah 6 — Cek status container
+### 3. Jalankan Container Pertama Kali
 
 ```bash
-docker-compose ps
-docker-compose logs backend --tail=50
+sudo docker compose up -d --build
+```
+
+### 4. Verifikasi Tunnel Terhubung
+
+```bash
+sudo docker compose logs tunnel --follow
+# Harus muncul: "INF Registered tunnel connection connIndex=0"
+# Tekan Ctrl+C untuk keluar
 ```
 
 ---
 
-## Catatan Penting
+## ☁️ Konfigurasi Cloudflare (One-Time)
 
-- **Database**: PostgreSQL berjalan di container `starinc-postgres`, data tersimpan di Docker volume `pgdata` (tidak hilang saat rebuild)
-- **Uploads**: File upload tersimpan di Docker volume `uploads` (tidak hilang saat rebuild)
-- **Schema**: `prisma/schema.prisma` = PostgreSQL (production). `prisma/schema.sqlite.prisma` = SQLite (lokal saja)
-- **Seed**: Hanya jalankan seed jika database kosong/baru: `docker-compose exec backend npx prisma db seed`
+### DNS Record (di Cloudflare Dashboard → starincofficial.id → DNS)
 
-## Menjalankan lokal (tanpa Docker)
+| Type | Name | Target | Proxy |
+|------|------|--------|-------|
+| CNAME | paoplanner | `b5c8113d-6b1c-42c7-847a-878250e28839.cfargotunnel.com` | ☁️ ON |
+
+> ⚠️ Jika ada A record lama yang pointing ke IP lokal (192.168.x.x), **delete dulu** sebelum tambah CNAME.
+
+### Route Tunnel (di Cloudflare → Networking → Tunnels → pao-planner → Routes)
+
+| Field | Value |
+|-------|-------|
+| Subdomain | `paoplanner` |
+| Domain | `starincofficial.id` |
+| Path | *(kosong)* |
+| Service URL | `http://frontend:3000` |
+
+---
+
+## 🔍 Cek Status Container
 
 ```bash
-# Di folder backend:
-npm run start:local         # generate SQLite client + jalankan dev server
-npm run prisma:local:push   # push schema SQLite ke dev.db
-npm run prisma:local:seed   # seed data ke SQLite
+# Lihat status semua container
+sudo docker compose ps
+
+# Output yang diharapkan (semua "Up"):
+# NAME                 STATUS
+# cloudflared-tunnel   Up
+# starinc-backend      Up
+# starinc-frontend     Up
+# starinc-postgres     Up
 ```
+
+---
+
+## 🛠️ Troubleshooting
+
+### Tunnel tidak terhubung
+```bash
+sudo docker compose logs tunnel --tail=30
+# Cari baris "ERR" untuk melihat error spesifik
+
+# Jika token expired, edit .env lalu restart tunnel:
+nano .env
+sudo docker compose restart tunnel
+```
+
+### Aplikasi error (500/crash)
+```bash
+sudo docker compose logs backend --tail=50
+sudo docker compose logs frontend --tail=50
+```
+
+### Container mati sendiri
+```bash
+# Restart semua tanpa rebuild
+sudo docker compose up -d
+
+# Atau restart container tertentu
+sudo docker compose restart backend
+```
+
+### Update schema database (setelah ada perubahan Prisma)
+```bash
+sudo docker compose exec backend npx prisma migrate deploy
+```
+
+### Reset database (⚠️ HATI-HATI: semua data hilang!)
+```bash
+sudo docker compose down -v   # hapus volume database
+sudo docker compose up -d --build
+sudo docker compose exec backend npx prisma migrate deploy
+sudo docker compose exec backend npx prisma db seed
+```
+
+---
+
+## 📁 Struktur Penting
+
+```
+starinc-internal/
+├── docker-compose.yml     ← Konfigurasi semua container
+├── .env                   ← Token Cloudflare (JANGAN di-commit!)
+├── .env.example           ← Template .env (aman di-commit)
+├── frontend/              ← Next.js app
+├── backend/               ← NestJS API + Prisma
+│   └── prisma/
+│       └── schema.prisma  ← Skema database
+└── .agents/
+    └── workflows/
+        └── deploy-truenas.md  ← File ini
+```
+
+---
+
+## 💡 Catatan Penting
+
+| Hal | Keterangan |
+|-----|------------|
+| **Database** | Data aman saat `docker compose down` — tersimpan di Docker volume `pgdata` |
+| **Uploads** | File upload aman — tersimpan di volume `backend_uploads` |
+| **Port** | DB (5432) & backend (5000) tidak terbuka ke internet — hanya lewat tunnel |
+| **SSH** | Gunakan `truenas_admin`, bukan `root` |
+| **sudo** | Semua perintah docker harus pakai `sudo` karena `truenas_admin` belum di grup docker |
+| **Token** | Jika token Cloudflare bocor/expired, buat token baru di Cloudflare → Rotate token di halaman tunnel |
